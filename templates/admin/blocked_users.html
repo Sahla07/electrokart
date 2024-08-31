@@ -1,0 +1,39 @@
+<!-- blocked_users.html -->
+
+{% extends "admin/base.html" %}
+{% block title %}
+Blocked Users
+{% endblock title %}
+
+{% block page_title %}
+Blocked Users
+{% endblock page_title %}
+
+{% block page_content %}
+<div class="container">
+    <h2>Blocked Users Table</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>EMAIL</th>
+                <th>USERNAME</th>
+                <th>LAST LOGIN</th>
+                <th>DATE JOINED</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for blocked_account in blocked_accounts %}
+            <tr>
+                <td>{{ blocked_account.email }}</td>
+                <td>{{ blocked_account.username }}</td>
+                <td>{{ blocked_account.last_login }}</td>
+                <td>{{ blocked_account.date_joined }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock page_content %}
+{% block custom_js %}
+
+{% endblock custom_js %}

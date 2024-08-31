@@ -1,0 +1,41 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block page_content %}
+<h2 class="text-center alert alert-info">Coupon List</h2>
+<div class="container">
+
+<div class="text-right mb-3">
+    <a href="{% url 'AdminApp:add_coupon' %}" class="btn btn-primary mb-3">Add Coupon</a>
+    </div>
+    </div>
+    <div class="container">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Discount</th>
+                <th>Valid From</th>
+                <th>Valid To</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for coupon in coupons %}
+            <tr>
+                <td>{{ coupon.code }}</td>
+                <td>{{ coupon.discount }}</td>
+                <td>{{ coupon.valid_from }}</td>
+                <td>{{ coupon.valid_to }}</td>
+
+                <td>
+        <form action="{% url 'AdminApp:delete_coupon' coupon.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+        </form>
+    </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock page_content %}

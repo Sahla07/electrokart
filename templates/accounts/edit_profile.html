@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<!-- ========================= SECTION CONTENT ========================= -->
+<section class="section-content padding-y bg">
+{% include 'includes/alerts.html' %}
+<div class="container">
+	<div class="row">
+	{% include 'includes/dashboard_sidebar.html' %}
+	<main class="col-md-9">
+		<article class="card">
+		<header class="card-header">
+            <div style="margin-left: 20px;">
+            <h3>User Profile</h3>
+            <br>
+			<p><strong>Full Name:</strong> {{ request.user.full_name }}</p>
+            <p><strong>Email:</strong> {{ request.user.email }}</p>
+            <br>
+            
+		</header>
+        <hr>
+    <div style="margin-left: 20px;">
+        <h4>My Addresses</h4>
+        
+        {% if addresses %}
+        <ul>
+            {% for address in addresses %}
+            <li>
+                <strong>Street Address:</strong> {{ address.street_address }} <br>
+                <strong>City:</strong> {{ address.city }} <br>
+                <strong>State:</strong> {{ address.state }} <br>
+                <strong>Country:</strong> {{ address.country }} <br>
+                <strong>Phone Number:</strong> {{ address.phone_number }} <br>
+                <br>
+                <div class = form-row>
+                <form method="post" action="{% url 'edit_address' address.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-secondary">Edit</button>
+                </form>
+                &nbsp; <!-- Add a non-breaking space for gap -->
+                <form method="post" action="{% url 'delete_address' address.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form></div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+            <p>No addresses found.</p>
+        {% endif %}
+        </div>
+        <div class="mt-3 ml-5" style="display: inline-block;">
+		<a href="{% url 'add_address' %}" class="btn btn-primary">Add Address</a>
+        </div>
+        <!-- Checkout button -->
+    <div class="text-center">
+        <a href="{% url 'checkout' %}" class="btn btn-success">Checkout</a>
+    </div>
+        <br>
+        <br>
+		</article> <!-- order-group.// --> 
+	</main>
+</div> <!-- row.// -->
+</div>
+
+
+</div>
+</div>
+</div>
+</section>
+<!-- ========================= SECTION CONTENT END// ========================= -->
+
+
+
+{% endblock content %}

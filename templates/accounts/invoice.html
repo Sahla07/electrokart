@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tax Invoice</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .invoice-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .invoice-details {
+            margin-bottom: 20px;
+            display: table;
+            width: 100%;
+        }
+        .invoice-left-details, .invoice-right-details {
+            display: table-cell;
+            padding: 10px;
+            vertical-align: top;
+        }
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .invoice-table th,
+        .invoice-table td {
+            border: 2px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .invoice-table th {
+            background-color: #f2f2f2;
+        }
+        .invoice-total {
+            font-weight: bold;
+            text-align: right;
+        }
+        .invoice-summary {
+            margin-bottom: 20px;
+        }
+        .authorized-signatory {
+            margin-top: 50px;
+            text-align: right;
+            font-style: italic;
+        }
+        .signature-line {
+            width: 50%;
+            border-top: 1px solid #000;
+            margin: 0 auto;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-header">
+        <h1>Tax Invoice</h1>
+        <h2>Electro Kart</h2>
+        <p>Date: {{ order.created_at }}</p>
+    </div>
+    <div class="invoice-details">
+        <div class="invoice-left-details">
+            <table>
+                <tr>
+                    <td><strong>Invoice Number:</strong></td>
+                    <td>GA{{ order.order_number }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Order ID:</strong></td>
+                    <td>{{ order.order_number }}</td>
+                </tr>
+                <tr>
+                    <td><strong>User:</strong></td>
+                    <td>{{ order.full_name }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Email:</strong></td>
+                    <td>{{ order.user.email }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Shipping Address:</strong></td>
+                    <td>{{ order.street_address }}, {{ order.city }}, {{ order.country }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Status:</strong></td>
+                    <td>{{ order.status }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Payment:</strong></td>
+                    <td>{% if payment.payment_method == 'PayPal' %}PayPal{% else %}COD{% endif %}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <table class="invoice-table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Price after Tax</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order_detail %}
+                <tr>
+                    <td>
+                        {{ item.product.product_name }}
+                        <p class="text-muted small">
+                            {% for variation in item.variations.all %}
+                                {{ variation.variation_category|capfirst }}: {{ variation.variation_value|capfirst }}<br>
+                            {% endfor %}
+                        </p>
+                    </td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ subtotal }}</td>
+                    <td>{{ order.final_total }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" class="invoice-total">Final Amount:</td>
+                <td>{{ order.final_total }}</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="invoice-right-details">
+        <table>
+            <tr>
+                <td colspan="6" style="text-align: center;">
+                    <h3 style="font-size: 24px;">Payment Summary</h3>
+                </td>
+            </tr>
+            <tr>
+                <th colspan="6">Tax:</th>
+                <th>${{ order.tax }}</th>
+            </tr>
+            <tr>
+                <th colspan="6">Coupon:</th>
+                <th>${{ order.coupon }}</th>
+            </tr>
+            <tr>
+                <th colspan="6">Coupon Discount:</th>
+                <th>${{ coupon_discount }}</th>
+            </tr>
+            <tr>
+                <tr>
+                    <th colspan="6">Delivery Charge:</th>
+                    <th>${{ order.delivery_charge }}</th>
+                </tr>
+                <tr>
+
+                <th colspan="6">Grand Total:</th>
+                <th>${{ order.final_total }}</th>
+            </tr>
+        </table>
+    </div>
+    <br>
+    <br>
+    <div class="authorized-signatory">
+        <div class="signature-line"></div>
+        <p>Authorized Signatory:</p>
+        <p>Electro Kart</p>
+        <div class="signature-line"></div>
+    </div>
+</body>
+</html>

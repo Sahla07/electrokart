@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Report</title>
+    <title>Sales Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        @media print {
+            .header, .navigation, .footer {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Sales Report</h1>
+    
+    <p>Total Sales Value: {{ total_sales }}</p>
+    
+    <p>Total Coupons: {{ total_coupons }}</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Order Number</th>
+                <th>Customer</th>
+                <th>Total Value</th>
+                <th>Coupon Discount</th>
+                <th>Total Discounted Sales Value</th>
+                <th>Created At</th> 
+                
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.order_number }}</td>
+                <td>{{ order.first_name }}</td>
+                <td>{{ order.order_total }}</td>
+                <td>{{ order.discount_value }}</td>
+                <td>{{ order.final_total }}</td>
+               
+
+                <td>{{ order.created_at }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

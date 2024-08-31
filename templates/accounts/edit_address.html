@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<!-- ========================= SECTION CONTENT ========================= -->
+<section class="section-conten padding-y bg">
+{% include 'includes/alerts.html' %}
+<div class="container">
+    <div class="row">
+    {% include 'includes/dashboard_sidebar.html' %}
+    <main class="col-md-9">
+        <article class="card">
+        <header class="card-header">
+            <h3>Edit Address</h3>
+        </header>
+        <hr>
+        <div style="margin-left: 20px;">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ address_form.non_field_errors }}
+    <div class="col form-group">
+        <label for="">Street Address:</label>
+        <input type="text" name="street_address" class="form-control" value="{{ address_form.instance.street_address }}" required>
+        </div>
+
+
+    <div class="col form-group">
+        <label for="">City:</label>
+        <input type="text" name="city" class="form-control" value="{{ address_form.instance.city }}" required>
+        </div>
+
+    <div class="col form-group">
+        <label for="">State</label>
+        <input type="text" name="state" class="form-control" value="{{ address_form.instance.state }}" required>
+        </div>
+
+    <div class="col form-group">
+        <label for="">Country:</label>
+        <input type="text" name="country" class="form-control" value="{{ address_form.instance.country }}" required>
+        </div>
+
+    <div class="col form-group">
+        <label for="">Phone Number:</label>
+        <input type="text" name="phone_number" class="form-control" value="{{ address_form.instance.phone_number }}" required>
+        </div>
+    <!-- Repeat the above pattern for other form fields -->
+    <button type="submit"class="btn btn-primary" >Edit Address</button>
+
+            </form>
+        </div>
+        <br>
+        <br>
+
+        </article> <!-- order-group.// --> 
+    </main>
+</div> <!-- row.// -->
+</div>
+
+
+</div>
+</div>
+</div>
+</section>
+<!-- ========================= SECTION CONTENT END// ========================= -->
+
+
+
+{% endblock content %}

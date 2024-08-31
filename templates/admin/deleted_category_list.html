@@ -1,0 +1,45 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Deleted Categories{% endblock %}
+
+{% block page_title %}Deleted Categories{% endblock %}
+
+{% block page_content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="my-4">Deleted Categories</h2>
+            {% if categories %}
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Slug</th>
+                            <th>Description</th>
+                            <th>Image</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for category in categories %}
+                            <tr>
+                                <td>{{ category.id }}</td>
+                                <td>{{ category.category_name }}</td>
+                                <td>{{ category.slug }}</td>
+                                <td>{{ category.description }}</td>
+                                <td>
+                                    {% if category.category_image %}
+                                        <img src="{{ category.category_image.url }}" alt="{{ category.category_name }}" width="50">
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No deleted categories available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

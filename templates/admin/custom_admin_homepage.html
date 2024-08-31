@@ -1,0 +1,288 @@
+{% extends 'admin/base.html' %}
+
+{% block css %}
+<style>
+  .chart-container {
+    width: 800px; /* Adjust the width as desired */
+    height: 400px; /* Adjust the height as desired */
+    margin: 0 auto; /* Center the charts horizontally */
+  }
+</style>
+{% endblock css %}
+
+{% block page_content %}
+<h1>Custom Admin Homepage</h1>
+
+<form method="GET">
+  {% csrf_token %}
+  <label for="period">Filter Period:</label>
+  <select id="period" name="period">
+    <option value="weekly" {% if filter_period == 'weekly' %}selected{% endif %}>Weekly</option>
+    <option value="monthly" {% if filter_period == 'monthly' %}selected{% endif %}>Monthly</option>
+    <option value="yearly" {% if filter_period == 'yearly' %}selected{% endif %}>Yearly</option>
+  </select>
+  <button type="submit">Apply</button>
+</form>
+
+<!-- Add pie chart container -->
+<div class="container">
+  <div class="row">
+    <div class="col-lg-4">
+      <h2>Pie Chart</h2>
+      <div class="chart-container">
+        <canvas id="pieChart" width="200" height="200"></canvas>
+      </div>
+    </div>
+
+
+    <div class="col-lg-4">
+      <h2>Overall Statistics</h2>
+      <p>Total Sales: {{ total_sales }}</p>
+      <p>Total Drop Sales: {{ total_drop_sales }}</p>
+      <p>Total After Discount: {{ total_discount }}</p>
+      <p>Total Coupons: {{ total_coupons }}</p>
+      <p>Net Sales: {{ net_sales }}</p>
+    </div>
+
+    <div class="col-lg-4">
+      <h2>Sales Overview</h2>
+      <div class="chart-container">
+        <canvas id="salesChart" width="600" height="600"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div>
+  <h2>Best Selling Products (Top 10)</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Product Name</th>
+        <th>Total Sales</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for product in top_products %}
+      <tr>
+        <td>{{ product.product__product_name }}</td>
+        <td>{{ product.total_sales }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div>
+  <h2>Best Selling Categories (Top 10)</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Category Name</th>
+        <th>Total Sales</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for category in top_categories %}
+      <tr>
+        <td>{{ category.product__category__category_name }}</td>
+        <td>{{ category.total_sales }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<!-- Add a new section for top brands -->
+<div>
+  <h2>Best Selling Brands (Top 10)</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Brand Name</th>
+        <th>Total Sales</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for brand in top_brands %}
+      <tr>
+        <td>{{ brand.product__brand }}</td>
+        <td>{{ brand.total_sales }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Include jQuery library -->
+<script>
+
+
+ // Define pie chart data
+  var pieData = {
+    labels: ['Total Sales', 'Total Drop Sales', 'Total after Discount', 'Total Coupons', 'Net Sales'],
+    datasets: [{
+      label: 'Pie Chart Data',
+      data: [12, 19, 3, 5, 2, 3],
+      backgroundColor: [
+        'rgba(255, 99, 132, 0.2)',
+        'rgba(54, 162, 235, 0.2)',
+        'rgba(255, 206, 86, 0.2)',
+        'rgba(75, 192, 192, 0.2)',
+        'rgba(153, 102, 255, 0.2)',
+        'rgba(255, 159, 64, 0.2)'
+      ],
+      borderColor: [
+        'rgba(255, 99, 132, 1)',
+        'rgba(54, 162, 235, 1)',
+        'rgba(255, 206, 86, 1)',
+        'rgba(75, 192, 192, 1)',
+        'rgba(153, 102, 255, 1)',
+        'rgba(255, 159, 64, 1)'
+      ],
+      borderWidth: 1
+    }]
+  };
+
+  var pieCtx = document.getElementById('pieChart').getContext('2d');
+  var pieChart = new Chart(pieCtx, {
+    type: 'pie',
+    data: pieData
+  });
+
+
+
+
+  var ctx = document.getElementById('salesChart').getContext('2d');
+  var salesChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Total Sales', 'Total Drop Sales', 'Total after Discount', 'Total Coupons', 'Net Sales'],
+      datasets: [{
+        label: 'Sales Data',
+        data: [{{ total_sales }}, {{ total_drop_sales }}, {{ total_discount }}, {{ total_coupons }}, {{ net_sales }}],
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)'
+        ],
+        borderColor: [
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)'
+        ],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+
+  function applyFilter() {
+    var period = $('#filter-period').val();
+    $.ajax({
+        url: "{% url 'AdminApp:custom_admin_homepage' %}",
+        type: 'POST',
+        data: {
+            period: period,
+            apply_filter: true
+        },
+        dataType: 'json',  // Specify that you expect JSON data in response
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+            // Update the overall statistics
+            $('#total_sales').text(response.total_sales);
+            $('#total_drop_sales').text(response.total_drop_sales);
+            $('#total_discount').text(response.total_discount);
+            $('#total_coupons').text(response.total_coupons);
+            $('#net_sales').text(response.net_sales);
+
+            // Update the chart data
+            salesChart.data.datasets[0].data = [
+                response.total_sales,
+                response.total_drop_sales,
+                response.total_discount,
+                response.total_coupons,
+                response.net_sales
+            ];
+            salesChart.update();
+
+            // Update the top products table
+            var topProductsTableBody = $('#top_products_table_body');
+            topProductsTableBody.empty();
+            $.each(response.top_products, function(index, product) {
+                topProductsTableBody.append('<tr><td>' + product.product__product_name + '</td><td>' + product.total_sales + '</td></tr>');
+            });
+
+            // Update the top categories table
+            var topCategoriesTableBody = $('#top_categories_table_body');
+            topCategoriesTableBody.empty();
+            $.each(response.top_categories, function(index, category) {
+                topCategoriesTableBody.append('<tr><td>' + category.product__category__category_name + '</td><td>' + category.total_sales + '</td></tr>');
+            });
+        }
+    });
+}
+      
+</script>
+<script>
+
+  function applyFilter() {
+    var period = $('#period').val();
+    $.ajax({
+        url: "{% url 'AdminApp:custom_admin_homepage' %}",
+        type: 'GET',
+        data: {
+            period: period
+        },
+        dataType: 'json',
+        success: function(response) {
+            // Update the overall statistics
+            $('#total_sales').text(response.total_sales);
+            $('#total_drop_sales').text(response.total_drop_sales);
+            $('#total_discount').text(response.total_discount);
+            $('#total_coupons').text(response.total_coupons);
+            $('#net_sales').text(response.net_sales);
+
+            // Update the chart data
+            salesChart.data.datasets[0].data = [
+                response.total_sales,
+                response.total_drop_sales,
+                response.total_discount,
+                response.total_coupons,
+                response.net_sales
+            ];
+            salesChart.update();
+
+            // Update the top products table
+            var topProductsTableBody = $('#top_products_table_body');
+            topProductsTableBody.empty();
+            $.each(response.top_products, function(index, product) {
+                topProductsTableBody.append('<tr><td>' + product.product__product_name + '</td><td>' + product.total_sales + '</td></tr>');
+            });
+
+            // Update the top categories table
+            var topCategoriesTableBody = $('#top_categories_table_body');
+            topCategoriesTableBody.empty();
+            $.each(response.top_categories, function(index, category) {
+                topCategoriesTableBody.append('<tr><td>' + category.product__category__category_name + '</td><td>' + category.total_sales + '</td></tr>');
+            });
+        },
+        error: function(xhr, status, error) {
+            console.log('AJAX Error:', status, error);
+        }
+    });
+}
+</script>
+{% endblock page_content %}

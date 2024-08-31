@@ -1,0 +1,380 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="section-content padding-y bg">
+    <style>
+        .image-gallery {
+            display: flex;
+        }
+
+        .product-grid {
+            display: flex;
+            flex-direction: column;
+            margin-right: 20px;
+        }
+
+        .product-item {
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .product-item img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            border: 1px solid #ccc;
+        }
+
+        .product-item img:hover {
+            border: 1px solid #000;
+        }
+
+        .big-image-container {
+            width: 500px;
+            height: 500px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .big-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            cursor: crosshair;
+        }
+
+        .zoom-container {
+            position: absolute;
+            top: 0;
+            left: 520px; /* Adjust to align with your layout */
+            width: 500px;
+            height: 500px;
+            overflow: hidden;
+            display: none;
+            border: 1px solid #ccc;
+            background: white;
+            z-index: 1000;
+        }
+
+        .zoomed-image {
+            position: absolute;
+            width: 1000px; /* Adjust as needed for zoom magnification */
+            height: 1000px;
+            object-fit: contain;
+        }
+    </style>
+
+    <div class="container">
+        {% include 'includes/alerts.html' %}
+        <div class="card">
+            <div class="row no-gutters">
+                <div class="col-lg-6 image-gallery">
+                    <div class="product-grid" id="productGrid">
+                        {% for image in single_product.images.all %}
+                        <div class="product-item">
+                            <img src="{{ image.image.url }}" alt="" data-src="{{ image.image.url }}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="big-image-container" id="bigImageContainer">
+                        <img id="mainImage" src="{{ single_product.images.first.image.url }}" alt="Main Product Image">
+                        <div class="zoom-container" id="zoomContainer">
+                            <img id="zoomedImage" class="zoomed-image" src="{{ single_product.images.first.image.url }}" alt="Zoomed Image">
+                        </div>
+                    </div>
+                </div>
+                <main class="col-md-6 border-left">
+                    <form id="add-to-cart-form" action="{% url 'add_cart' single_product.id %}" method="post">
+                        {% csrf_token %}
+                        <article class="content-body">
+                            <h2 class="title">{{ single_product.product_name }}</h2>
+                            <div class="rating-star">
+                                <span>
+                                    <i class="fa fa-star{% if single_product.averageReview < 0.5 %}-o{% elif single_product.averageReview >= 0.5 and single_product.averageReview < 1 %}-half-o{% endif %}" aria-hidden="true"></i>
+                                    <i class="fa fa-star{% if single_product.averageReview < 1.5 %}-o{% elif single_product.averageReview >= 1.5 and single_product.averageReview < 2 %}-half-o{% endif %}" aria-hidden="true"></i>
+                                    <i class="fa fa-star{% if single_product.averageReview < 2.5 %}-o{% elif single_product.averageReview >= 2.5 and single_product.averageReview < 3 %}-half-o{% endif %}" aria-hidden="true"></i>
+                                    <i class="fa fa-star{% if single_product.averageReview < 3.5 %}-o{% elif single_product.averageReview >= 3.5 and single_product.averageReview < 4 %}-half-o{% endif %}" aria-hidden="true"></i>
+                                    <i class="fa fa-star{% if single_product.averageReview < 4.5 %}-o{% elif single_product.averageReview >= 4.5 and single_product < 5 %}-half-o{% endif %}" aria-hidden="true"></i>
+                                    <span>{{ single_product.countReview }} reviews</span>
+                                </span>
+                            </div>
+
+                            <div class="mb-3">
+                                {% if single_product.discount > 0 %}
+                                    <var class="price h4">${{ single_product.price_after_discount }}</var>
+                                    <p>{{ single_product.discount }}% off</p>
+                                {% else %}
+                                    <var class="price h4">${{ single_product.price }}</var>
+                                {% endif %}
+                            </div>
+
+                            <p>{{ single_product.description }}</p>
+                            <p><b>Stock: </b>{% if single_product.stock >= 0 %}{{ single_product.stock }}{% else %}0{% endif %}</p>
+                            <hr>
+                            <div class="row">
+                                <div class="item-option-select">
+                                    <h6>Choose Color</h6>
+                                    <select name="color" class="form-control" required>
+                                        <option value="" disabled selected>Select</option>
+                                        {% for i in single_product.variation_set.colors %}
+                                        <option value="{{ i.variation_value | lower }}">{{ i.variation_value | capfirst }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div> <!-- row.// -->
+
+                            <hr>
+                            <form id="add-to-cart-form" action="{% url 'add_cart' single_product.id %}" method="post">
+                                {% csrf_token %}
+                                {% if total_quantity_in_cart %}
+                                    <p>Total quantity in cart: {{ total_quantity_in_cart }}</p>
+                                {% endif %}
+                                {% if single_product.stock <= 0 %}
+                                    <h5 class="text-danger">Out of stock</h5>
+                                {% elif total_quantity_in_cart >= single_product.stock %}
+                                    <h5 class="text-danger">Out of stock</h5>
+                                {% else %}
+                                    <button type="submit" class="btn btn-primary">
+                                        <span class="text">Add to cart</span>
+                                        <i class="fas fa-shopping-cart"></i>
+                                    </button>
+                                {% endif %}
+                            </form>
+                            
+                            <form id="add-to-wishlist-form" action="{% url 'add_wishlist' product_slug=single_product.slug %}" method="post">
+                                {% csrf_token %}
+                                {% if in_wishlist %}
+                                    <button type="submit" class="btn btn-success mt-2 disabled">
+                                        <span class="text">Added to Wishlist</span>
+                                        <i class="fas fa-heart"></i>
+                                    </button>
+                                {% else %}
+                                    <button type="submit" class="btn btn-success mt-2">
+                                        <span class="text">Add to Wishlist</span>
+                                        <i class="fas fa-heart"></i>
+                                    </button>
+                                {% endif %}
+                            </form>
+                            
+                        </article> <!-- product-info-aside .// -->
+                    
+                </main> <!-- col.// -->
+            </div> <!-- row.// -->
+        </div> <!-- card.// -->
+        <!-- ============================ COMPONENT 1 END .// ================================= -->
+
+        <br>
+
+        <div class="row">
+            <div class="col-md-9">
+                <form action="{% url 'submit_review' single_product.id %}" method="POST">
+                    {% csrf_token %}
+                    <h5>Write Your Reviews</h5>
+                    <div>
+                        <!-- Rating stars -->
+                        <label>How do you rate this product?</label>
+                        <br>
+                        <div class="rate">
+                            <input type="radio" name="rating" id="rating10" value="5" required /><label for="rating10" title="5"></label>
+                            <input type="radio" name="rating" id="rating9" value="4.5" required /><label for="rating9" title="4.5" class="half"></label>
+                            <input type="radio" name="rating" id="rating8" value="4" required /><label for="rating8" title="4"></label>
+                            <input type="radio" name="rating" id="rating7" value="3.5" required /><label for="rating7" title="3.5" class="half"></label>
+                            <input type="radio" name="rating" id="rating6" value="3" required /><label for="rating6" title="3"></label>
+                            <input type="radio" name="rating" id="rating5" value="2.5" required /><label for="rating5" title="2.5" class="half"></label>
+                            <input type="radio" name="rating" id="rating4" value="2" required /><label for="rating4" title="2"></label>
+                            <input type="radio" name="rating" id="rating3" value="1.5" required /><label for="rating3" title="1.5" class="half"></label>
+                            <input type="radio" name="rating" id="rating2" value="1" required /><label for="rating2" title="1"></label>
+                            <input type="radio" name="rating" id="rating1" value="0.5" required /><label for="rating1" title="0.5" class="half"></label>
+                            <input type="radio" name="rating" id="rating0" value="0" required /><label for="rating0" title="0"></label>
+                        </div>
+                        <!-- Rating stars end -->
+
+                        <input type="text" class="form-control" name="subject" placeholder="Title" required>
+                    </div>
+                    <div>
+                        <textarea class="form-control" name="review" rows="4" placeholder="Review" required></textarea>
+                    </div>
+                    <div class="mt-3">
+                        {% if user.is_authenticated %}
+                            {% if reviewed %}
+                                <button type="submit" class="btn btn-primary disabled">Submit Review</button>
+                            {% else %}
+                                <button type="submit" class="btn btn-primary">Submit Review</button>
+                            {% endif %}
+                        {% else %}
+                            <p>Please <a href="{% url 'accounts:loginn' %}">Login</a> or <a href="{% url 'accounts:register' %}">Register</a> to leave a review</p>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <br>
+
+        <div class="row">
+            <div class="col-md-9">
+                <h5>Customer Reviews</h5>
+                {% for review in reviews %}
+                <div class="media mb-3">
+                    <div class="media-body">
+                        <p class="mt-0 mb-1">{{ review.user.username }}</p>
+                        <div class="rating-star">
+                            <span>
+                                <i class="fa fa-star{% if review.rating < 0.5 %}-o{% elif review.rating >= 0.5 and review.rating < 1 %}-half-o{% endif %}" aria-hidden="true"></i>
+                                <i class="fa fa-star{% if review.rating < 1.5 %}-o{% elif review.rating >= 1.5 and review.rating < 2 %}-half-o{% endif %}" aria-hidden="true"></i>
+                                <i class="fa fa-star{% if review.rating < 2.5 %}-o{% elif review.rating >= 2.5 and review.rating < 3 %}-half-o{% endif %}" aria-hidden="true"></i>
+                                <i class="fa fa-star{% if review.rating < 3.5 %}-o{% elif review.rating >= 3.5 and review.rating < 4 %}-half-o{% endif %}" aria-hidden="true"></i>
+                                <i class="fa fa-star{% if review.rating < 4.5 %}-o{% elif review.rating >= 4.5 and review.rating < 5 %}-half-o{% endif %}" aria-hidden="true"></i>
+                            </span>
+                        </div>
+                        <h5>{{ review.subject }}</h5>
+                        <p>{{ review.review }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div> <!-- container .//  -->
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const productItems = document.querySelectorAll('.product-item img');
+        const bigImage = document.getElementById('mainImage');
+        const zoomContainer = document.getElementById('zoomContainer');
+        const zoomedImage = document.getElementById('zoomedImage');
+        const bigImageContainer = document.getElementById('bigImageContainer');
+    
+        productItems.forEach(item => {
+            item.addEventListener('click', function () {
+                const newSrc = this.getAttribute('data-src');
+                bigImage.src = newSrc;
+                zoomedImage.src = newSrc;
+            });
+        });
+    
+        bigImageContainer.addEventListener('mousemove', function (e) {
+            const { left, top, width, height } = this.getBoundingClientRect();
+            const x = e.clientX - left;
+            const y = e.clientY - top;
+            const xPercent = x / width;
+            const yPercent = y / height;
+    
+            const zoomWidth = zoomedImage.width;
+            const zoomHeight = zoomedImage.height;
+    
+            zoomedImage.style.left = `-${xPercent * (zoomWidth - width)}px`;
+            zoomedImage.style.top = `-${yPercent * (zoomHeight - height)}px`;
+        });
+    
+        bigImageContainer.addEventListener('mouseover', function () {
+            zoomContainer.style.display = 'block';
+        });
+    
+        bigImageContainer.addEventListener('mouseout', function () {
+            zoomContainer.style.display = 'none';
+        });
+    });
+    $(document).ready(function() {
+        function updateCounts() {
+            $.ajax({
+                url: "{% url 'get_counts' %}",
+                method: 'GET',
+                success: function(response) {
+                    $('.cart-count').text(response.cart_count);
+                    $('.wishlist-count').text(response.wishlist_count);
+                    if (response.wishlist_count > 0) {
+                        $('.wishlist-count').show();
+                    } else {
+                        $('.wishlist-count').hide();
+                    }
+                }
+            });
+        }
+    
+        $('#add-to-cart-form').submit(function(e) {
+            e.preventDefault();
+            var form = $(this);
+            $.ajax({
+                type: form.attr('method'),
+                url: form.attr('action'),
+                data: form.serialize(),
+                success: function(response) {
+                    if (response.status === 'added') {
+                        alert('Item added to cart!');
+                    } else if (response.status === 'error') {
+                        alert(response.message);
+                    }
+                    updateCounts();
+                },
+                error: function(xhr, status, error) {
+                    alert('An error occurred: ' + xhr.responseText);
+                }
+            });
+        });
+    
+        $('#add-to-wishlist-form').submit(function(e) {
+            e.preventDefault();
+            var form = $(this);
+            $.ajax({
+                type: form.attr('method'),
+                url: form.attr('action'),
+                data: form.serialize(),
+                success: function(response) {
+                    if (response.status === 'added') {
+                        alert('Item added to wishlist!');
+                    } else if (response.status === 'removed') {
+                        alert('Item removed from wishlist!');
+                    } else if (response.status === 'error') {
+                        alert(response.message);
+                    }
+                    updateCounts();
+                },
+                error: function(xhr, status, error) {
+                    alert('An error occurred: ' + xhr.responseText);
+                }
+            });
+        });
+    
+        updateCounts();
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const productItems = document.querySelectorAll('.product-item img');
+        const bigImage = document.getElementById('mainImage');
+        const zoomContainer = document.getElementById('zoomContainer');
+        const zoomedImage = document.getElementById('zoomedImage');
+        const bigImageContainer = document.getElementById('bigImageContainer');
+    
+        productItems.forEach(item => {
+            item.addEventListener('click', function () {
+                bigImage.src = this.dataset.src;
+                zoomedImage.src = this.dataset.src;
+            });
+        });
+    
+        bigImageContainer.addEventListener('mousemove', function (e) {
+            const { left, top, width, height } = this.getBoundingClientRect();
+            const x = e.clientX - left;
+            const y = e.clientY - top;
+            const xPercent = x / width;
+            const yPercent = y / height;
+    
+            const zoomWidth = zoomedImage.width;
+            const zoomHeight = zoomedImage.height;
+    
+            zoomedImage.style.left = `-${xPercent * (zoomWidth - width)}px`;
+            zoomedImage.style.top = `-${yPercent * (zoomHeight - height)}px`;
+        });
+    
+        bigImageContainer.addEventListener('mouseover', function () {
+            zoomContainer.style.display = 'block';
+        });
+    
+        bigImageContainer.addEventListener('mouseout', function () {
+            zoomContainer.style.display = 'none';
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<section class="section-content padding-y bg">
+  <div class="container">
+
+    <!-- ============================ COMPONENT 1 ================================= -->
+
+
+    <div class="row">
+    
+      <aside class="col-lg-6">
+      {% if error_message %}
+            <div class="alert alert-danger">
+                {{ error_message }}
+            </div>
+        {% endif %}
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title mb-4">Choose Billing Address</h4>
+            <form action="{% url 'place_order' %}" method="POST">
+              {% csrf_token %}
+              
+    
+
+            {% if addresses %}
+            <ul>
+              <select name="selected_address" class="form-control">
+                <option value="">Select Address</option>
+                {% for address in addresses %}
+                <option value="{{ address.id }}">{{ address.street_address }}, {{ address.city }}, {{ address.state }},
+                  {{ address.country }}</option>
+                {% endfor %}
+              </select>             
+            </ul>
+
+            {% else %}
+            
+            <p>No addresses found.</p>
+            {% endif %}
+          <div class="mt-3 ml-5" style="display: inline-block;">
+            <a href="{% url 'add_address' %}" class="btn btn-primary">Add Address</a>
+          </div>
+          <br>
+          <br>
+          <!-- Coupon Form -->
+          <div class="form-group mt-3 ml-5">
+            <label for="coupon_code">If you Have Coupon, Enter Coupon Code:</label>
+            <input type="text" class="form-control" id="coupon_code_input" name="coupon_code">
+          </div>
+              
+              <br>
+              <br>
+              
+          <button type="submit" name="submit" class="btn btn-primary btn-block">Place Order</button>
+        
+              <a href="{% url 'store' %}" class="btn btn-light btn-block">Continue Shopping</a>
+            </form>
+        </div>
+
+    </div> <!-- card.// -->
+
+
+    </aside> <!-- col.// -->
+    <aside class="col-lg-6">
+
+      <div class="card">
+        <div class="card-body">
+        
+          <table class="table table-borderless table-shopping-cart">
+            <thead class="text-muted">
+              <tr class="small text-uppercase">
+                <th scope="col">Product</th>
+                <th scope="col" width="120">Quantity</th>
+                <th scope="col" width="120">Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for cart_item in cart_items %}
+              <tr>
+                <td>
+                  <figure class="itemside align-items-center">
+                    <div class="aside"><img src="{{ cart_item.product.images.first.image.url }}" class="img-sm"></div>
+                    <figcaption class="info">
+                      <a href="{{ cart_item.product.get_url }}" class="title text-dark">{{ cart_item.product.product_name }}</a>
+                      <p class="small text-muted">
+                        {% if cart_item.variations.all %}
+                        {% for item in cart_item.variations.all %}
+                        {{ item.variation_category | capfirst}} : {{item.variation_value | capfirst}}<br>
+                        {% endfor %}
+                        {% endif %}
+                        </p>
+                    </figcaption>
+                  </figure>
+                </td>
+                <td>
+                  <!-- col.// -->
+                  <label for="">{{cart_item.quantity}}</label>
+                </td>
+                <td>
+                  <div class="price-wrap">
+                    <var class="price">${{ grand_total }}</var>
+                    <small class="text-muted"> ${{ cart_item.product.price_after_discount }} each </small>
+                  </div> <!-- price-wrap .// -->
+                </td>
+
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <!-- coupon_form.html -->
+
+
+        </div> <!-- card-body.// -->
+      </div> <!-- card.// -->
+
+    </aside> <!-- col.// -->
+
+
+  </div> <!-- row.// -->
+
+  <!-- ============================ COMPONENT 1 END .// ================================= -->
+
+  </div> <!-- container .//  -->
+</section>
+<!-- ========================= SECTION CONTENT END// ========================= -->
+
+<script>
+// Define the getCookie function
+document.getElementById('apply_coupon').addEventListener('click', function() {
+  const couponCode = document.getElementById('coupon_code_input').value;
+  const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  fetch('/apply_coupon/', { // Adjust URL based on your routing
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': csrftoken,
+      },
+      body: JSON.stringify({ coupon_code: couponCode }),
+  })
+  .then(response => response.json())
+  .then(data => {
+      if (data.success) {
+          document.getElementById('discount').textContent = `$${data.discount}`;
+          document.getElementById('final_total').textContent = `$${data.final_total}`;
+      } else {
+          alert(data.error);
+      }
+  })
+  .catch(error => {
+      console.error('Error:', error);
+  });
+});
+</script>
+
+</body>
+
+</html>
+<br>
+
+
+
+{% endblock content %}

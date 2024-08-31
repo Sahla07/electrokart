@@ -1,0 +1,77 @@
+<!-- displayuser.html -->
+
+{% extends "admin/base.html" %}
+{% block title %}
+Display Users
+{% endblock title %}
+
+{% block page_title %}
+Display Users
+{% endblock page_title %}
+
+{% block page_content %}
+<div class="container">
+    <h2>Users Table</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>EMAIL</th>
+                <th>USERNAME</th>
+                <th>LAST LOGIN</th>
+                <th>DATE JOINED</th>
+                <th>ACTION</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in accounts %}
+            <tr>
+                <td>{{ account.email }}</td>
+                <td>{{ account.username }}</td>
+                <td>{{ account.last_login }}</td>
+                <td>{{ account.date_joined }}</td>
+                <td>
+                    <form method="post" action="{% url 'AdminApp:users' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="user_id" value="{{ account.id }}">
+                        <button type="submit" class="btn btn-sm {% if account.is_blocked %}btn-success{% else %}btn-danger{% endif %}">
+                            {% if account.is_blocked %} Unblock {% else %} Block {% endif %}
+                        </button>
+
+                        <button type="button" class="btn btn-danger btn-sm delete-button" data-user-id="{{ account.id }}">Delete</button>
+                    </form>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock page_content %}
+{% block custom_js %}
+<script>
+    document.querySelectorAll('.delete-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.getAttribute('data-user-id');
+            if (confirm('Are you sure you want to delete this user?')) {
+                // Create a hidden form element and submit it
+                const form = document.createElement('form');
+                form.method = 'post';
+                form.action = '{% url "AdminApp:delete_user" %}';
+                const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+                const userIdInput = document.createElement('input');
+                userIdInput.type = 'hidden';
+                userIdInput.name = 'user_id';
+                userIdInput.value = userId;
+                form.appendChild(userIdInput);
+                const csrfTokenInput = document.createElement('input');
+                csrfTokenInput.type = 'hidden';
+                csrfTokenInput.name = 'csrfmiddlewaretoken';
+                csrfTokenInput.value = csrfToken;
+                form.appendChild(csrfTokenInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    });
+</script>
+{% endblock custom_js %}

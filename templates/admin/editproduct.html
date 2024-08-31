@@ -1,0 +1,79 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Edit Product{% endblock title %}
+
+{% block custom_css %}
+  <style>
+    .form-group {
+      margin-bottom: 20px;
+    }
+  </style>
+{% endblock custom_css %}
+
+{% block page_title %}Edit Product{% endblock page_title %}
+
+{% block page_content %}
+<div class="container">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    {{ image_form.as_p }}
+
+    <div class="form-group">
+      <label>Existing Images:</label>
+      <div>
+        {% for image in existing_images %}
+        <div class="image-wrapper" style="display: inline-block; text-align: center; margin: 5px;" id="image-{{ image.id }}">
+          <img src="{{ image.image.url }}" alt="{{ product.product_name }}" class="img-thumbnail" style="max-width: 100px; margin: 5px;">
+          <div>
+            <!-- Clear button to delete the image via AJAX -->
+            <button type="button" class="btn btn-danger btn-clear-image" data-image-id="{{ image.id }}">Clear</button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+
+    <input type="submit" class="btn btn-primary" value="Save Changes">
+  </form>
+</div>
+
+<script>
+  // JavaScript to auto-populate slug field based on product name
+  document.getElementById("id_product_name").addEventListener("input", function() {
+    var productName = this.value;
+    var slugField = document.getElementById("id_slug");
+    slugField.value = slugify(productName); // Ensure slugify function is defined or use your own logic
+  });
+
+   // AJAX for deleting images
+   document.querySelectorAll('.btn-clear-image').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var imageId = this.getAttribute('data-image-id');
+      var csrfToken = '{{ csrf_token }}';
+
+      fetch('{% url "AdminApp:delete_image" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({ 'image_id': imageId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Remove the image wrapper from the page
+          document.getElementById('image-' + imageId).remove();
+        } else {
+          alert('An error occurred while deleting the image.');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    });
+  });
+</script>
+{% endblock page_content %}

@@ -1,0 +1,56 @@
+{% extends 'admin/base.html' %}
+{% block title %}Add Product{% endblock title %}
+
+{% block custom_css %}
+  <style>
+    .form-group {
+      margin-bottom: 20px;
+    }
+  </style>
+{% endblock custom_css %}
+
+{% block page_title %}Add Product{% endblock page_title %}
+
+{% block page_content %}
+<div class="container">
+  <div class="card">
+    <div class="card-body">
+      <h2>Add Product</h2>
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {{ form.as_p }}
+       
+        </div>
+        <div class="row mb-3">
+          <label class="col-sm-2 col-form-label">Add Images</label>
+          <div class="col-sm-10">
+            {{ form_image.non_field_errors }}
+            {{ form_image.errors }}
+            {{ form_image.images }}
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-success mt-2">Save</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+    function slugify(text) {
+        return text.toString().toLowerCase()
+            .replace(/\s+/g, '-')           // Replace spaces with -
+            .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+            .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+            .replace(/^-+/, '')             // Trim - from start of text
+            .replace(/-+$/, '');            // Trim - from end of text
+    }
+
+    document.getElementById("id_product_name").addEventListener("input", function() {
+        var productName = this.value;
+        var slugField = document.getElementById("id_slug");
+        slugField.value = slugify(productName);
+    });
+</script>
+{% endblock page_content %}

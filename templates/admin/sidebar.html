@@ -1,0 +1,100 @@
+{% load static %}
+<div class="main-sidebar sidebar-style-2">
+    <aside id="sidebar-wrapper">
+      <div class="sidebar-brand">
+       <a href="/"> <img src="{% static 'admin/img/logo2.png'%}" alt="logo" width="100" class="shadow-light rounded-circle"/></a>
+      </div>
+      <div class="sidebar-brand sidebar-brand-sm">
+        <a href="/"> <img src="{% static 'admin/img/logo2.png'%}" alt="logo" width="50" class="shadow-light rounded-circle"/></a>
+      </div>
+      <ul class="sidebar-menu">
+        
+        <li class="menu-header">Dashboard</li>
+        <li class="menu-header"><a href="{% url 'AdminApp:custom_admin_homepage' %}" class="nav-link "><i class="fas fa-home"></i><span>Home</span></a></li>
+        {% url 'categorylist' as categorylist %}
+        {% url 'AdminApp:addcategory' as category_create %}
+        {% url 'AdminApp:editcategory' 1 as category_update %} <!-- The `1` is a placeholder for an actual category ID -->
+
+        <li class="dropdown {% if request.path == category_list %} active {% endif %}{% if request.path == category_create %} active {% endif %}{% if request.path == category_update %} active {% endif %} {% if request.path == deleted_category_list %} active {% endif %}">
+            <a href="#" class="nav-link has-dropdown"><i class="fas fa-fire"></i><span>Category</span></a>
+            <ul class="dropdown-menu">
+                <li class="{% if request.path == category_list %} active {% endif %}"><a class="nav-link" href="{% url 'AdminApp:categorylist'%}">All Categories</a></li>
+                <li class="{% if request.path == category_create %} active {% endif %}"><a class="nav-link" href="{{ category_create }}">Add Category</a></li>
+                <li class="{% if request.path == deleted_category_list %} active {% endif %}"><a class="nav-link" href="{% url 'AdminApp:deleted_category_list' %}">Deleted Categories</a></li>
+            </ul>
+        </li>
+       
+      
+
+      <li class="dropdown {% if request.path == 'addproduct' %} active {% endif %} {% if request.path == 'productlist' %} active {% endif %} {% if request.path == 'editproduct' %} active {% endif %}">
+        <a href="#" class="nav-link has-dropdown"><i class="fas fa-fire"></i><span>Products</span></a>
+        <ul class="dropdown-menu">
+            <li class="{% if request.path == 'addproduct' %} active {% endif %}">
+                <a class="nav-link" href="{% url 'AdminApp:addproduct' %}">Add Products</a>
+            </li>
+            <li class="{% if request.path == 'productlist' %} active {% endif %} {% if request.path == 'editproduct' %} active {% endif %}">
+                <a class="nav-link" href="{% url 'AdminApp:productlist' %}">Product List</a>
+            </li>
+            
+            <li class="{% if request.path == 'admin_add_variation' %} active {% endif %}">
+              <a class="nav-link" href="{% url 'AdminApp:admin_add_variation' %}">Add Variation</a>
+          </li>
+        </ul>
+    </li>
+     
+    {% url "users" as users %}
+    {% url "block_users" as block_users %}
+
+   
+
+    <li class="dropdown  {% if request.path == users %} active {% endif %}{% if request.path == block_users %} active {% endif %}" >
+      <a href="#" class="nav-link has-dropdown"><i class="fas fa-fire"></i><span>Users</span></a>
+      <ul class="dropdown-menu">
+        <li class="{% if request.path == users %} active {% endif %}"><a class="nav-link" href="{% url 'AdminApp:users'%}">List Users</a></li>
+        <li class="{% if request.path == block_users %} active {% endif %}"><a class="nav-link" href="{% url 'AdminApp:block_users'%}">Blocked Users </a></li>
+
+        
+      </li>
+    </li>
+    
+   
+  </ul>
+  <li class="dropdown {% if request.path == order_list_url %} active {% endif %}{% if request.path == cancel_order_url %} active {% endif %}">
+    <a href="#" class="nav-link has-dropdown"><i class="fas fa-fire"></i><span>Orders</span></a>
+    <ul class="dropdown-menu">
+        <li class="{% if request.path == order_list_url %} active {% endif %}">
+            <a class="nav-link" href="{% url 'AdminApp:orderlist' %}">List Orders</a>
+        </li>
+       
+    </ul>
+</li>
+<li class="dropdown {% if request.path == coupon_list_url %} active {% endif %}{% if request.path == add_coupon_url %} active {% endif %}">
+  <a href="#" class="nav-link has-dropdown"><i class="fas fa-ticket-alt"></i><span>Coupons</span></a>
+  <ul class="dropdown-menu">
+      <li class="{% if request.path == coupon_list_url %} active {% endif %}">
+          <a class="nav-link" href="{% url 'AdminApp:coupon' %}">List Coupons</a>
+      </li>
+      <li class="{% if request.path == add_coupon_url %} active {% endif %}">
+          <a class="nav-link" href="{% url 'AdminApp:add_coupon' %}">Add Coupon</a>
+      </li>
+  </ul>
+</li>
+
+
+<li class="dropdown {% if request.path == sales_report_url %} active {% endif %}">
+  <a href="#" class="nav-link has-dropdown"><i class="fas fa-chart-line"></i><span>Sales Reports</span></a>
+  <ul class="dropdown-menu">
+      <li class="{% if request.path == sales_report_url %} active {% endif %}">
+          <a class="nav-link" href="{% url 'AdminApp:sales_report' %}">Overall Sales Report</a>
+      </li>
+    
+  </ul>
+</li>
+
+  </ul>
+      <div class="mt-4 mb-4 p-3 hide-sidebar-mini">
+        <a href="{% url 'AdminApp:signout'%}" class="btn btn-primary btn-lg btn-block btn-icon-split">
+          <i class="fas fa-rocket"></i>Logout
+        </a>
+      </div>        </aside>
+  </div>

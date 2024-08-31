@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container">
+    <br>
+        <h2 class="text-center">Your Wishlist</h2>
+        {% if wishlist_items %}
+        <div class="row">
+            {% for item in wishlist_items %}
+            <div class="col-md-2 mb-2">
+            <br>
+                <div class="card">
+                    <img src="{{ item.product.images.first.image.url }}" class="card-img-top" alt="{{ item.product.title }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ item.product.product_name }}</h5>
+                        <div class="price-wrap mt-2">
+                            {% if item.product.discount > 0 %}
+                            
+                            <del class="price-old">${{ item.product.price }}</del>
+                            <span class="price-discount">${{ item.product.price_after_discount }}</span>
+                            <span class="discount-label">({{ item.product.discount }}% off)</span>
+                        {% else %}
+                            <span class="price">${{ item.product.price }}</span>
+                        {% endif %}
+                            </div> <!-- price-wrap.// -->
+                        <form action="{% url 'remove_from_wishlist' item.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Remove</button>
+                        </form>
+                        <br>
+                        <a href="{% url 'product_detail' item.product.category.slug item.product.slug %}" class="btn btn-block btn-primary">View Details </a>
+    
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <br>
+        <br>
+        <!-- Center the message when the wishlist is empty -->
+        <div class="row justify-content-center align-items-center">
+            <div class="col-md-6">
+                <h4 class="text-center">Your wishlist is empty.</h4>
+            </div>
+        </div>
+        
+        <br>
+        <br>
+        
+        
+        
+        {% endif %}
+    </div>
+    <div class="text-center">
+                    <a href="{% url 'store' %}" class="btn btn-primary">Continue Shopping</a>
+                </div>
+        <br>
+        <br><br>
+        <br>
+        <br>
+         <br>
+        <br><br>
+        <br>
+        <br>
+              <br>   
+{% endblock content %}

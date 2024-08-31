@@ -1,0 +1,16 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Add Variation{% endblock title %}
+
+{% block page_title %}Add Variation{% endblock page_title %}
+
+{% block page_content %}
+<div class="container">
+    <h2>Add Variation</h2>
+    <form method="post" action="{% url 'AdminApp:admin_add_variation' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>
+{% endblock page_content %}
